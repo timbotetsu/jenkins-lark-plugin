@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>4.48</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>io.github.timbotetsu</groupId>
+    <artifactId>jenkins-notification-for-lark</artifactId>
+    <version>0.0.1</version>
+    <packaging>hpi</packaging>
+
+    <name>jenkins notification plugin for lark</name>
+    <url>https://github.com/timbotetsu/jenkins-notification-plugin-for-lark</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/timbotetsu/jenkins-notification-plugin-for-lark.git</connection>
+        <developerConnection>scm:git:git://github.com/timbotetsu/jenkins-notification-plugin-for-lark.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/timbotetsu/jenkins-notification-plugin-for-lark</url>
+    </scm>
+
+    <properties>
+        <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+        <jenkins.version>2.361.1</jenkins.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.361.x</artifactId>
+                <version>1654.vcb_69d035fa_20</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
