@@ -1,0 +1,18 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="Webhook URL" field="webhook">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="Notify Start" field="notifyStart">
+        <f:checkbox/>
+    </f:entry>
+    <f:entry title="Notify Success" field="notifySuccess">
+        <f:checkbox/>
+    </f:entry>
+    <f:entry title="Notify Aborted" field="notifyAborted">
+        <f:checkbox/>
+    </f:entry>
+    <f:entry title="Notify Failure" field="notifyFailure">
+        <f:checkbox/>
+    </f:entry>
+</j:jelly>

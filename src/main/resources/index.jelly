@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    TODO
+    A plugin integrates with Jenkins, allows publishing build status messages to Lark.
 </div>

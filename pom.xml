@@ -15,7 +15,8 @@
     <version>0.0.1</version>
     <packaging>hpi</packaging>
 
-    <name>jenkins notification plugin for lark</name>
+    <name>Lark Notifier</name>
+    <description>A plugin integrates with Jenkins, allows publishing build status messages to Lark</description>
     <url>https://github.com/timbotetsu/jenkins-notification-plugin-for-lark</url>
     <licenses>
         <license>
