@@ -8,7 +8,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -19,7 +18,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 
 @Symbol("Lark Notifier")
-public class LarkNotifier extends Notifier {
+public class LarkNotifier extends hudson.tasks.Notifier {
 
     private String webhook;
     private boolean notifyStart;
@@ -77,8 +76,8 @@ public class LarkNotifier extends Notifier {
     }
 
     @Override
-    public BuildStepDescriptor getDescriptor() {
-        return super.getDescriptor();
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     @Override
@@ -99,7 +98,9 @@ public class LarkNotifier extends Notifier {
 
     @Override
     public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
-        // TODO
+        if (notifyStart) {
+            new Notification(this).started(build);
+        }
         return super.prebuild(build, listener);
     }
 
@@ -124,7 +125,7 @@ public class LarkNotifier extends Notifier {
         @NonNull
         @Override
         public String getDisplayName() {
-            return this.DISPLAY_NAME;
+            return DISPLAY_NAME;
         }
 
     }
