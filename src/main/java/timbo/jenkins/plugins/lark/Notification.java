@@ -2,8 +2,8 @@ package timbo.jenkins.plugins.lark;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Result;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -19,58 +19,105 @@ public class Notification {
     }
 
     public void started(AbstractBuild build) {
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request;
-        try {
-            request = HttpRequest.newBuilder()
-                    .uri(new URI(this.larkNotifier.getWebhook()))
-                    .POST(HttpRequest.BodyPublishers.ofString(buildMsgBody(build, null)))
-                    .header("Content-Type", "application/json")
-                    .build();
-            client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
+        if (this.larkNotifier.isNotifyStart()) {
+            send(this.larkNotifier.getWebhook(), buildMsgBody(build, null));
         }
     }
 
     public void completed(AbstractBuild build) {
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request;
-        try {
-            request = HttpRequest.newBuilder()
-                    .uri(new URI(this.larkNotifier.getWebhook()))
-                    .POST(HttpRequest.BodyPublishers.ofString(buildMsgBody(build, build.getResult())))
-                    .header("Content-Type", "application/json")
-                    .build();
-            client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
+        Result result = build.getResult();
+        if ((result == Result.ABORTED && this.larkNotifier.isNotifyAborted()) ||
+                (result == Result.FAILURE && this.larkNotifier.isNotifyFailure()) ||
+                (result == Result.SUCCESS && this.larkNotifier.isNotifySuccess())) {
+            send(this.larkNotifier.getWebhook(), buildMsgBody(build, build.getResult()));
         }
     }
 
     private String buildMsgBody(AbstractBuild build, Result result) {
-        String template = "{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{%content%}}}}";
+        MsgCardBuilder cardBuilder = new MsgCardBuilder().project(build.getProject().getFullDisplayName());
+        StringBuilder content = new StringBuilder();
 
-        JSONArray contentArray = new JSONArray();
-        JSONArray contentDetailArray = new JSONArray();
-        JSONObject o = new JSONObject();
-        o.put("tag", "text");
-        if (result == null && this.larkNotifier.isNotifyStart()) {
-            o.put("text", "build started");
-        } else if (result == Result.ABORTED && this.larkNotifier.isNotifyAborted()) {
-            o.put("text", "build aborted");
-        } else if (result == Result.FAILURE && this.larkNotifier.isNotifyFailure()) {
-            o.put("text", "build failed");
-        } else if (result == Result.SUCCESS && this.larkNotifier.isNotifySuccess()) {
-            o.put("text", "build succeed");
+        // START
+        if (result == null) {
+            content.append("**Estimated duration**: ")
+                    .append(readableEstimatedDuration(build.getProject().getEstimatedDuration()))
+                    .append("\\n<a href=")
+                    .append(buildLink(build.getUrl()))
+                    .append(">build link</a>");
+            cardBuilder.type(MsgCardBuilder.Type.START);
         }
-        contentDetailArray.add(o);
-        contentArray.add(contentDetailArray);
 
-        JSONObject body = new JSONObject();
-        body.put("title", build.getProject().getFullDisplayName());
-        body.put("content", contentArray);
+        // ABORTED
+        if (result == Result.ABORTED) {
+            content.append("**Build aborted**");
+            cardBuilder.type(MsgCardBuilder.Type.ABORTED);
+        }
 
-        return template.replace("{%content%}", body.toString());
+        // FAILED
+        if (result == Result.FAILURE) {
+            content.append("**Build failed**, click link for detail")
+                    .append("\\n<a href=")
+                    .append(buildLink(build.getUrl()))
+                    .append(">build link</a>");
+            cardBuilder.type(MsgCardBuilder.Type.FAILURE);
+        }
+
+        // SUCCESS
+        if (result == Result.SUCCESS) {
+            content.append("**Using time**: ")
+                    .append(build.getTimestampString())
+                    .append("\\n<a href=")
+                    .append(buildLink(build.getUrl()))
+                    .append(">build link</a>");
+            cardBuilder.type(MsgCardBuilder.Type.SUCCESS);
+        }
+
+        return cardBuilder.content(content.toString()).toJsonString();
     }
 
+    private void send(String webhook, String body) {
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest request;
+        try {
+            request = HttpRequest.newBuilder()
+                    .uri(new URI(webhook))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception ignored) {
+        }
+    }
 
+    private String readableEstimatedDuration(long estimatedDuration) {
+        if (estimatedDuration > 0) {
+            long l = estimatedDuration / (1000 * 60);
+            return l + " min";
+        }
+        return "no estimated duration";
+    }
+
+    private String buildLink(String buildUrl) {
+        // null check
+        Jenkins instance = Jenkins.getInstanceOrNull();
+        if (instance == null) {
+            return "";
+        }
+        String rootUrl = instance.getRootUrl();
+        if (StringUtils.isBlank(rootUrl)) {
+            return "";
+        }
+
+        StringBuilder linkBuilder = new StringBuilder(rootUrl);
+        linkBuilder.append(rootUrl);
+        if (!rootUrl.endsWith("/")) {
+            linkBuilder.append("/");
+        }
+        linkBuilder.append(buildUrl);
+        if (!buildUrl.endsWith("/")) {
+            linkBuilder.append("/");
+        }
+        linkBuilder.append("console");
+        return linkBuilder.toString();
+    }
 }

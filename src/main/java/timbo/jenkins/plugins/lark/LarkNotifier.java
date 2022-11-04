@@ -5,7 +5,6 @@ import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -99,9 +98,7 @@ public class LarkNotifier extends hudson.tasks.Notifier {
 
     @Override
     public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
-        if (notifyStart) {
-            new Notification(this).started(build);
-        }
+        new Notification(this).started(build);
         return super.prebuild(build, listener);
     }
 
