@@ -41,9 +41,8 @@ public class Notification {
         if (result == null) {
             content.append("**Estimated duration**: ")
                     .append(readableEstimatedDuration(build.getProject().getEstimatedDuration()))
-                    .append("\\n<a href=")
-                    .append(buildLink(build.getUrl()))
-                    .append(">build link</a>");
+                    .append("\\nHOST - ").append(getHost())
+                    .append("\\n<a href=").append(buildLink(build.getUrl())).append(">build link</a>");
             cardBuilder.type(MsgCardBuilder.Type.START);
         }
 
@@ -56,9 +55,8 @@ public class Notification {
         // FAILED
         if (result == Result.FAILURE) {
             content.append("**Build failed**, click link for detail")
-                    .append("\\n<a href=")
-                    .append(buildLink(build.getUrl()))
-                    .append(">build link</a>");
+                    .append("\\nHOST - ").append(getHost())
+                    .append("\\n<a href=").append(buildLink(build.getUrl())).append(">build link</a>");
             cardBuilder.type(MsgCardBuilder.Type.FAILURE);
         }
 
@@ -66,9 +64,8 @@ public class Notification {
         if (result == Result.SUCCESS) {
             content.append("**Using time**: ")
                     .append(build.getTimestampString())
-                    .append("\\n<a href=")
-                    .append(buildLink(build.getUrl()))
-                    .append(">build link</a>");
+                    .append("\\nHOST - ").append(getHost())
+                    .append("\\n<a href=").append(buildLink(build.getUrl())).append(">Click Here - BUILD LINK</a>");
             cardBuilder.type(MsgCardBuilder.Type.SUCCESS);
         }
 
@@ -97,6 +94,16 @@ public class Notification {
         return "no estimated duration";
     }
 
+    private String getHost() {
+        // null check
+        Jenkins instance = Jenkins.getInstanceOrNull();
+        if (instance == null) {
+            return "";
+        }
+        String rootUrl = instance.getRootUrl();
+        return StringUtils.isBlank(rootUrl) ? "" : rootUrl.toUpperCase();
+    }
+
     private String buildLink(String buildUrl) {
         // null check
         Jenkins instance = Jenkins.getInstanceOrNull();
@@ -108,7 +115,7 @@ public class Notification {
             return "";
         }
 
-        StringBuilder linkBuilder = new StringBuilder(rootUrl);
+        StringBuilder linkBuilder = new StringBuilder();
         linkBuilder.append(rootUrl);
         if (!rootUrl.endsWith("/")) {
             linkBuilder.append("/");
